@@ -1,0 +1,5 @@
+[
+  {"port", "8080"},
+  {"mode", "testnet"},
+  {"priv_key_location", "hyperbeam-testnet-key.json"}
+]. 

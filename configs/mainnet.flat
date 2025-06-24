@@ -1,0 +1,5 @@
+[
+  {"port", "10000"},
+  {"mode", "mainnet"},
+  {"priv_key_location", "hyperbeam-key.json"}
+]. 
