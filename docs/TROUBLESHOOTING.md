@@ -327,7 +327,7 @@ tail -100 log/erlang.log.1 | grep -i error
 
 ### 支持渠道
 
-- 🐛 **Bug 报告**：[GitHub Issues](https://github.com/YOUR_USERNAME/hyperbeam-arm64-deployment/issues)
+- 🐛 **Bug 报告**：[GitHub Issues](https://github.com/ArweaveOasis/HyperBEAM-arm64-deployment/issues)
 - 💬 **社区讨论**：[Discord](https://discord.gg/arweave)
 - 📚 **官方文档**：[HyperBEAM Docs](https://docs.hyperbeam.com)
 - 📧 **直接联系**：support@hyperbeam.com

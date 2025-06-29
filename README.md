@@ -30,7 +30,7 @@
 
 ```bash
 # 1. 克隆部署工具包
-git clone https://github.com/YOUR_USERNAME/hyperbeam-arm64-deployment.git
+git clone https://github.com/ArweaveOasis/HyperBEAM-arm64-deployment.git
 cd hyperbeam-arm64-deployment
 
 # 2. 设置便捷符号链接 (一键设置)
@@ -48,7 +48,7 @@ chmod +x setup-links.sh
 
 ```bash
 # 1. 克隆部署工具包
-git clone https://github.com/YOUR_USERNAME/hyperbeam-arm64-deployment.git
+git clone https://github.com/ArweaveOasis/HyperBEAM-arm64-deployment.git
 cd hyperbeam-arm64-deployment
 
 # 2. 手动创建快捷方式 (保持向后兼容性)
@@ -68,7 +68,7 @@ ln -s monitoring/monitor-node.sh monitor-node.sh
 
 ```bash
 # 1. 克隆部署工具包
-git clone https://github.com/YOUR_USERNAME/hyperbeam-arm64-deployment.git
+git clone https://github.com/ArweaveOasis/HyperBEAM-arm64-deployment.git
 cd hyperbeam-arm64-deployment
 
 # 2. 直接运行scripts目录中的脚本
@@ -209,7 +209,7 @@ ls -la monitoring/
 
 ### 开发环境
 ```bash
-git clone https://github.com/YOUR_USERNAME/hyperbeam-arm64-deployment.git
+git clone https://github.com/ArweaveOasis/HyperBEAM-arm64-deployment.git
 cd hyperbeam-arm64-deployment
 ./scripts/setup-dev-environment.sh
 ```

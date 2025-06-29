@@ -9,7 +9,7 @@
 ### 步骤 1: 下载部署工具包
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/hyperbeam-arm64-deployment.git
+git clone https://github.com/ArweaveOasis/HyperBEAM-arm64-deployment.git
 cd hyperbeam-arm64-deployment
 ```
 
@@ -200,6 +200,6 @@ export ERL_FLAGS="+sbwt very_short +swt very_low"
 
 ## 📞 支持
 
-- 🐛 问题报告：[GitHub Issues](https://github.com/YOUR_USERNAME/hyperbeam-arm64-deployment/issues)
+- 🐛 问题报告：[GitHub Issues](https://github.com/ArweaveOasis/HyperBEAM-arm64-deployment/issues)
 - 💬 社区讨论：[Discord](https://discord.gg/arweave)
 - 📚 官方文档：[HyperBEAM Docs](https://docs.hyperbeam.com) 

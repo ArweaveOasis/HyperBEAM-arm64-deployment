@@ -1,0 +1,1 @@
+scripts/deploy-hyperbeam-arm64.sh
