@@ -26,18 +26,56 @@
 - 至少 8GB RAM
 - 50GB+ 可用磁盘空间
 
-### 一键部署
+### 一键部署 (推荐方式)
 
 ```bash
 # 1. 克隆部署工具包
 git clone https://github.com/YOUR_USERNAME/hyperbeam-arm64-deployment.git
 cd hyperbeam-arm64-deployment
 
-# 2. 运行自动化部署脚本
+# 2. 设置便捷符号链接 (一键设置)
+chmod +x setup-links.sh
+./setup-links.sh
+
+# 3. 运行自动化部署脚本
 ./deploy-hyperbeam-arm64.sh
 
-# 3. 启动监控 (可选)
+# 4. 启动监控 (可选)
 ./monitor-node.sh --status
+```
+
+### 手动符号链接方式
+
+```bash
+# 1. 克隆部署工具包
+git clone https://github.com/YOUR_USERNAME/hyperbeam-arm64-deployment.git
+cd hyperbeam-arm64-deployment
+
+# 2. 手动创建快捷方式 (保持向后兼容性)
+ln -s scripts/deploy-hyperbeam-arm64.sh deploy-hyperbeam-arm64.sh
+ln -s monitoring/monitor-node.sh monitor-node.sh
+
+# 3. 运行自动化部署脚本
+./deploy-hyperbeam-arm64.sh
+# 或者直接使用: ./scripts/deploy-hyperbeam-arm64.sh
+
+# 4. 启动监控 (可选)
+./monitor-node.sh --status
+# 或者直接使用: ./monitoring/monitor-node.sh --status
+```
+
+### 备选部署方式 (直接使用scripts目录)
+
+```bash
+# 1. 克隆部署工具包
+git clone https://github.com/YOUR_USERNAME/hyperbeam-arm64-deployment.git
+cd hyperbeam-arm64-deployment
+
+# 2. 直接运行scripts目录中的脚本
+./scripts/deploy-hyperbeam-arm64.sh
+
+# 3. 启动监控 (可选)
+./monitoring/monitor-node.sh --status
 ```
 
 ## 📁 项目结构
@@ -60,6 +98,13 @@ hyperbeam-arm64-deployment/
 │   ├── TROUBLESHOOTING.md            # 故障排除指南
 │   ├── MONITORING.md                 # 监控指南
 │   └── CONFIGURATION.md              # 配置说明
+├── setup-links.sh                   # 符号链接设置脚本
+├── deploy-hyperbeam-arm64.sh         # 部署脚本符号链接 (快捷方式)
+├── monitor-node.sh                   # 监控脚本符号链接 (快捷方式)
+├── simple-monitor.sh                 # 简单监控脚本符号链接 (快捷方式)
+├── setup-dependencies.sh             # 依赖安装脚本符号链接 (快捷方式)
+├── validate-config.sh               # 配置验证脚本符号链接 (快捷方式)
+├── fix-apple-silicon.sh             # Apple Silicon修复脚本符号链接 (快捷方式)
 └── README.md                         # 本文件
 ```
 
@@ -110,17 +155,52 @@ export ERL_FLAGS="+sbwt very_short +swt very_low"
 ## 🔍 监控示例
 
 ```bash
-# 检查节点状态
+# 检查节点状态 (使用符号链接)
 ./monitor-node.sh --status
 
+# 或者直接使用scripts目录
+./monitoring/monitor-node.sh --status
+
 # 实时日志监控
-./monitor-node.sh --logs
+./monitoring/monitor-node.sh --logs
 
 # 系统资源监控
-./monitor-node.sh --resources
+./monitoring/monitor-node.sh --resources
 
 # 网络连接监控
-./monitor-node.sh --network
+./monitoring/monitor-node.sh --network
+```
+
+## 🚨 常见问题排除
+
+### 问题 1: 脚本找不到
+```bash
+# 如果出现 "no such file or directory" 错误
+# 方案1: 检查文件是否存在
+ls -la scripts/deploy-hyperbeam-arm64.sh
+
+# 方案2: 创建符号链接
+ln -s scripts/deploy-hyperbeam-arm64.sh deploy-hyperbeam-arm64.sh
+
+# 方案3: 直接使用完整路径
+./scripts/deploy-hyperbeam-arm64.sh
+```
+
+### 问题 2: 权限错误
+```bash
+# 添加执行权限
+chmod +x scripts/deploy-hyperbeam-arm64.sh
+chmod +x monitoring/monitor-node.sh
+```
+
+### 问题 3: 路径问题
+```bash
+# 确保在正确目录
+pwd  # 应该显示: .../hyperbeam-arm64-deployment
+
+# 检查文件结构
+ls -la scripts/
+ls -la monitoring/
 ```
 
 ## 🤝 贡献指南
@@ -164,4 +244,4 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 
 ---
 
-**⭐ 如果这个项目对您有帮助，请给个 Star！** # HyperBEAM-arm64-deployment
+**⭐ 如果这个项目对您有帮助，请给个 Star！**
