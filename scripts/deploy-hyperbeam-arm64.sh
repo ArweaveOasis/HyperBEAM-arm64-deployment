@@ -212,6 +212,9 @@ clone_hyperbeam() {
 fix_apple_silicon() {
     log_info "修复 Apple Silicon 兼容性问题..."
     
+    # 确保在正确的工作目录
+    cd "$HYPERBEAM_HOME"
+    
     # 复制修复脚本
     cp "${SCRIPT_DIR}/fix-apple-silicon.sh" .
     chmod +x fix-apple-silicon.sh
@@ -227,7 +230,8 @@ fix_apple_silicon() {
 build_hyperbeam() {
     log_info "构建 HyperBEAM (这可能需要 20-30 分钟)..."
     
-    # 确保在 HyperBEAM 目录
+    # 确保在正确的工作目录，然后进入 HyperBEAM 目录
+    cd "$HYPERBEAM_HOME"
     cd HyperBEAM
     
     # 设置构建环境变量
@@ -259,6 +263,8 @@ build_hyperbeam() {
 configure_node() {
     log_info "配置 HyperBEAM 节点..."
     
+    # 确保在正确的工作目录，然后进入构建目录
+    cd "$HYPERBEAM_HOME/HyperBEAM"
     cd "_build/default/rel/hb"
     
     # 检查并停止冲突的进程
@@ -369,6 +375,9 @@ start_node() {
 # 设置监控工具
 setup_monitoring() {
     log_info "设置监控工具..."
+    
+    # 确保在正确的工作目录
+    cd "$HYPERBEAM_HOME"
     
     # 复制监控脚本
     cp "${SCRIPT_DIR}/../monitoring/"*.sh .
