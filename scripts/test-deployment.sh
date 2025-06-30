@@ -90,7 +90,7 @@ main() {
         done
         
         # 检查 fix-apple-silicon.sh 是否包含关键修复
-        run_test "Apple Silicon修复内容完整" "grep -q 'sed.*\.bak' 'scripts/fix-apple-silicon.sh'"
+        run_test "Apple Silicon修复内容完整" "grep -q 'temp_sed_fix.sh' 'scripts/fix-apple-silicon.sh'"
         
         # 检查磁盘空间
         local available_gb=$(df -g . | tail -1 | awk '{print $4}')

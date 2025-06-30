@@ -90,22 +90,55 @@ fix_makefile() {
     cp Makefile Makefile.original
     log_info "已备份原始 Makefile 为 Makefile.original"
     
-    # 简单直接的修复方案：修正 macOS sed 语法
-    log_info "修复 sed 命令兼容性..."
+    # 创建可靠的文件修复脚本，替代有问题的 sed 命令
+    log_info "修复 WAMR 文件修改兼容性..."
     
-    if grep -q "sed -i '\.bak' -e '742a" Makefile; then
-        log_info "发现有问题的 sed 命令，正在修复 macOS 语法..."
+         # 创建修复脚本
+    cat > temp_sed_fix.sh << 'EOF'
+#!/bin/bash
+# 修复 WAMR 文件，使用 awk 代替有问题的 sed 命令
+
+file="./_build/wamr/core/iwasm/aot/aot_runtime.c"
+if [ -f "$file" ]; then
+    # 备份原文件
+    cp "$file" "$file.bak"
+    
+    # 在第742行后插入内容，使用 awk 确保兼容性
+    awk 'NR==742{print; print "tbl_inst->is_table64 = 1;"} NR!=742' "$file.bak" > "$file"
+    
+    echo "✓ 已修复 $file"
+else
+    echo "文件 $file 不存在，将在构建时创建后修复"
+fi
+EOF
+    chmod +x temp_sed_fix.sh
+    
+    # 检查并修复 Makefile 中的 sed 命令
+    if grep -q "sed -i.*742a.*tbl_inst" Makefile; then
+        log_info "发现需要修复的 sed 命令，替换为兼容的方案..."
         
-        # 将有问题的 sed 命令修正为 macOS 兼容的语法
-        # 从: sed -i '.bak' -e '742a\' -e 'tbl_inst->is_table64 = 1;'
-        # 到: sed -i '.bak' '742a\
-        #     tbl_inst->is_table64 = 1;'
-        sed -i '.bak' "s|sed -i '\\.bak' -e '742a\\\\' -e 'tbl_inst->is_table64 = 1;'|sed -i '.bak' '742a\\\\\\ntbl_inst->is_table64 = 1;'|" Makefile
+        # 找到包含有问题的 sed 命令的行号
+        local sed_line=$(grep -n "sed -i.*742a.*tbl_inst" Makefile | cut -d: -f1)
         
-        log_info "✓ Makefile 修复成功 - 已修正为 macOS 兼容的 sed 语法"
-    else
-        log_info "✓ 未发现需要修复的 sed 命令"
+        if [[ -n "$sed_line" ]]; then
+            # 替换为我们的修复脚本
+            head -n $((sed_line-1)) Makefile > Makefile.tmp
+            echo -e "\t\t./temp_sed_fix.sh; \\" >> Makefile.tmp
+            tail -n +$((sed_line+1)) Makefile >> Makefile.tmp
+            mv Makefile.tmp Makefile
+            
+            log_info "✓ 已将第 $sed_line 行的 sed 命令替换为兼容的修复脚本"
+        fi
     fi
+    
+    # 修复 make 命令为 ninja（因为 CMAKE_GENERATOR=Ninja）
+    if grep -q "make -C.*wamr.*lib" Makefile; then
+        log_info "修复构建命令：make -> ninja..."
+        sed -i '.bak' 's/make -C \$(WAMR_DIR)\/lib/ninja -C $(WAMR_DIR)\/lib/' Makefile
+        log_info "✓ 已修复构建命令为 ninja"
+    fi
+    
+    log_info "✓ WAMR 兼容性修复完成"
     
     # 同时添加 CMake 策略修复
     log_info "添加 CMake 策略版本修复..."
