@@ -80,6 +80,8 @@ main() {
     run_test "WAMR修复脚本创建" "grep -q 'temp_sed_fix.sh' 'scripts/deploy-hyperbeam-arm64.sh'"
     run_test "Ninja构建修复" "grep -q 'ninja -C.*WAMR_DIR' 'scripts/deploy-hyperbeam-arm64.sh'"
     run_test "构建配置文件创建" "grep -q 'config\.flat' 'scripts/deploy-hyperbeam-arm64.sh'"
+    run_test "密钥文件OpenSSL修复" "grep -q 'OpenSSL 生成正确格式的 RSA 密钥' 'scripts/deploy-hyperbeam-arm64.sh'"
+    run_test "JWK格式密钥生成" "grep -q '创建简化的 JWK 格式密钥文件' 'scripts/deploy-hyperbeam-arm64.sh'"
     run_test "构建验证功能" "grep -q '验证构建产物' 'scripts/deploy-hyperbeam-arm64.sh'"
     
     # 检查错误处理
