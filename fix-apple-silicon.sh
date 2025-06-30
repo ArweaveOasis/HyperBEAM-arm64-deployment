@@ -1,1 +1,0 @@
-scripts/fix-apple-silicon.sh

@@ -13,10 +13,21 @@ git clone https://github.com/ArweaveOasis/HyperBEAM-arm64-deployment.git
 cd hyperbeam-arm64-deployment
 ```
 
-### 步骤 2: 运行一键部署
+### 步骤 2: 运行部署前测试 (推荐)
 
 ```bash
-chmod +x scripts/deploy-hyperbeam-arm64.sh
+./scripts/test-deployment.sh
+```
+
+这个测试会验证：
+- ✅ 系统兼容性
+- ✅ 必需工具可用性
+- ✅ 磁盘空间充足
+- ✅ 脚本完整性
+
+### 步骤 3: 运行一键部署
+
+```bash
 ./scripts/deploy-hyperbeam-arm64.sh
 ```
 
@@ -31,11 +42,10 @@ chmod +x scripts/deploy-hyperbeam-arm64.sh
 - ✅ 启动节点和监控工具
 - ✅ 提供详细的使用指南
 
-### 步骤 3: 验证部署
+### 步骤 4: 验证部署
 
 ```bash
 # 检查节点状态
-cd ~/hyperbeam-production
 ./monitoring/monitor-node.sh --status
 
 # 查看 Web 界面 (端口可能不同)
