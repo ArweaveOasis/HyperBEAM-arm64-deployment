@@ -213,48 +213,175 @@ fix_apple_silicon() {
     log_info "修复 Apple Silicon 兼容性问题..."
     
     # 确保在正确的工作目录
-    cd "$HYPERBEAM_HOME"
+    cd "$HYPERBEAM_HOME/HyperBEAM"
     
-    # 复制修复脚本
-    cp "${SCRIPT_DIR}/fix-apple-silicon.sh" .
-    chmod +x fix-apple-silicon.sh
+    # 检查是否在 HyperBEAM 目录
+    if [[ ! -f "Makefile" ]]; then
+        log_error "未找到 HyperBEAM Makefile，请确认源码已正确克隆"
+        exit 1
+    fi
     
-    # 运行修复（在 HyperBEAM 目录内）
-    cd HyperBEAM
-    ../fix-apple-silicon.sh
+    log_info "创建 WAMR 文件修复脚本..."
     
-    log_success "Apple Silicon 兼容性已修复"
+    # 创建 WAMR 文件修复脚本（使用 awk 替代有问题的 sed）
+    cat > temp_sed_fix.sh << 'EOF'
+#!/bin/bash
+# 修复 WAMR 文件，使用 awk 代替有问题的 sed 命令
+
+file="./_build/wamr/core/iwasm/aot/aot_runtime.c"
+if [ -f "$file" ]; then
+    # 备份原文件
+    cp "$file" "$file.bak"
+    
+    # 在第742行后插入内容，使用 awk 确保兼容性
+    awk 'NR==742{print; print "tbl_inst->is_table64 = 1;"} NR!=742' "$file.bak" > "$file"
+    
+    echo "✓ 已修复 $file"
+else
+    echo "文件 $file 不存在，将在构建时创建后修复"
+fi
+EOF
+    chmod +x temp_sed_fix.sh
+    
+    # 备份原始 Makefile
+    if [[ ! -f "Makefile.original" ]]; then
+        cp Makefile Makefile.original
+        log_info "已备份原始 Makefile"
+    fi
+    
+    log_info "修复 Makefile 中的 macOS 兼容性问题..."
+    
+    # 1. 替换有问题的 sed 命令为我们的修复脚本
+    if grep -q "sed -i.*742a.*tbl_inst" Makefile; then
+        log_info "发现有问题的 sed 命令，替换为兼容方案..."
+        
+        # 找到包含有问题的 sed 命令的行号
+        local sed_line=$(grep -n "sed -i.*742a.*tbl_inst" Makefile | cut -d: -f1)
+        
+        if [[ -n "$sed_line" ]]; then
+            # 替换为我们的修复脚本
+            head -n $((sed_line-1)) Makefile > Makefile.tmp
+            echo -e "\t\t./temp_sed_fix.sh; \\" >> Makefile.tmp
+            tail -n +$((sed_line+1)) Makefile >> Makefile.tmp
+            mv Makefile.tmp Makefile
+            
+            log_info "✓ 已将第 $sed_line 行的 sed 命令替换为兼容脚本"
+        fi
+    fi
+    
+    # 2. 修复 make 命令为 ninja（因为 CMAKE_GENERATOR=Ninja）
+    if grep -q "make -C.*WAMR_DIR.*lib" Makefile; then
+        log_info "修复构建命令：make -> ninja..."
+        sed -i '.bak' 's/make -C \$(WAMR_DIR)\/lib/ninja -C $(WAMR_DIR)\/lib/' Makefile
+        log_info "✓ 已修复构建命令为 ninja"
+    fi
+    
+    # 3. 添加 CMake 策略修复（如果尚未添加）
+    if ! grep -q "DCMAKE_POLICY_VERSION_MINIMUM" Makefile; then
+        log_info "添加 CMake 策略版本修复..."
+        # 在 cmake 命令后添加策略设置
+        local cmake_line=$(grep -n "cmake \\\\" Makefile | head -1 | cut -d: -f1)
+        if [[ -n "$cmake_line" ]]; then
+            head -n $cmake_line Makefile > Makefile.tmp
+            echo -e "\t\t\t-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \\" >> Makefile.tmp
+            tail -n +$((cmake_line+1)) Makefile >> Makefile.tmp
+            mv Makefile.tmp Makefile
+            log_info "✓ CMake 策略修复已添加"
+        else
+            log_warning "未找到 cmake 命令行，跳过策略修复"
+        fi
+    else
+        log_info "✓ CMake 策略已存在，跳过"
+    fi
+    
+    # 4. 设置环境变量
+    log_info "设置 Apple Silicon 优化环境变量..."
+    
+    # OpenSSL 路径
+    local OPENSSL_PATH=$(brew --prefix openssl 2>/dev/null || echo "/opt/homebrew/opt/openssl")
+    if [[ -d "$OPENSSL_PATH" ]]; then
+        export LDFLAGS="-L$OPENSSL_PATH/lib"
+        export CPPFLAGS="-I$OPENSSL_PATH/include"
+        log_info "✓ OpenSSL 环境变量已设置"
+    fi
+    
+    # 优化构建参数
+    export MAKEFLAGS="-j$(sysctl -n hw.ncpu)"
+    export CMAKE_GENERATOR=Ninja
+    log_info "✓ 构建优化参数已设置"
+    
+    log_success "Apple Silicon 兼容性修复完成"
+    log_info "修复内容："
+    log_info "  ✓ WAMR sed 命令替换为 awk 脚本"
+    log_info "  ✓ 构建命令修复为 ninja"
+    log_info "  ✓ CMake 策略版本设置"
+    log_info "  ✓ Apple Silicon 环境变量优化"
 }
 
 # 构建 HyperBEAM
 build_hyperbeam() {
     log_info "构建 HyperBEAM (这可能需要 20-30 分钟)..."
     
-    # 确保在正确的工作目录，然后进入 HyperBEAM 目录
-    cd "$HYPERBEAM_HOME"
-    cd HyperBEAM
+    # 确保在正确的工作目录
+    cd "$HYPERBEAM_HOME/HyperBEAM"
     
-    # 设置构建环境变量
-    export CMAKE_GENERATOR=Ninja
-    export MAKEFLAGS="-j$(sysctl -n hw.ncpu)"
+    # 验证修复是否已应用
+    if [[ ! -f "temp_sed_fix.sh" ]]; then
+        log_warning "未找到 Apple Silicon 修复脚本，可能修复未正确应用"
+    fi
+    
+    if ! grep -q "ninja -C.*WAMR_DIR" Makefile; then
+        log_warning "Makefile 可能未正确修复，构建可能失败"
+    fi
     
     # 重新加载环境变量
     source ~/.zshrc 2>/dev/null || true
     
-    # 清理之前的构建 (可选)
+    # 清理之前的构建
     log_info "清理之前的构建缓存..."
     rebar3 clean || true
     
+    # 清理可能存在的旧 WAMR 构建
+    if [[ -d "_build/wamr" ]]; then
+        log_info "清理旧的 WAMR 构建..."
+        rm -rf _build/wamr
+    fi
+    
     # 开始构建
     log_info "开始编译 HyperBEAM..."
+    log_info "预计构建时间：20-30 分钟（首次构建）"
+    
     if rebar3 release; then
         log_success "HyperBEAM 构建成功"
+        
+        # 验证构建产物
+        if [[ -f "_build/default/rel/hb/bin/hb" ]]; then
+            log_info "✓ HyperBEAM 可执行文件已生成"
+        else
+            log_warning "⚠️ 未找到 HyperBEAM 可执行文件"
+        fi
+        
+        if [[ -f "_build/wamr/lib/libvmlib.a" ]]; then
+            log_info "✓ WAMR 库文件已生成"
+        else
+            log_warning "⚠️ 未找到 WAMR 库文件"
+        fi
+        
     else
         log_error "HyperBEAM 构建失败"
-        log_error "常见解决方案:"
-        log_error "1. 检查是否有旧进程占用端口: lsof -i :8734"
-        log_error "2. 重新运行 Apple Silicon 修复: ../fix-apple-silicon.sh"
-        log_error "3. 检查系统依赖: brew doctor"
+        log_error "诊断信息："
+        log_error "1. 检查 WAMR 修复: ls -la temp_sed_fix.sh"
+        log_error "2. 检查 Makefile 修复: grep ninja Makefile"
+        log_error "3. 检查端口占用: lsof -i :8734"
+        log_error "4. 检查系统依赖: brew doctor"
+        log_error "5. 查看详细错误日志"
+        
+        # 显示可能的错误日志
+        if [[ -f "_build/default/rel/hb/log/error.log" ]]; then
+            log_error "最近的错误日志："
+            tail -20 _build/default/rel/hb/log/error.log
+        fi
+        
         exit 1
     fi
 }

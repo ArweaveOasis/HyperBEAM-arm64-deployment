@@ -76,6 +76,11 @@ main() {
     run_test "构建函数改进检查" "grep -q 'rebar3 clean' 'scripts/deploy-hyperbeam-arm64.sh'"
     run_test "端口冲突处理检查" "grep -q 'lsof.*10000' 'scripts/deploy-hyperbeam-arm64.sh'"
     
+    # 检查新的修复功能
+    run_test "WAMR修复脚本创建" "grep -q 'temp_sed_fix.sh' 'scripts/deploy-hyperbeam-arm64.sh'"
+    run_test "Ninja构建修复" "grep -q 'ninja -C.*WAMR_DIR' 'scripts/deploy-hyperbeam-arm64.sh'"
+    run_test "构建验证功能" "grep -q '验证构建产物' 'scripts/deploy-hyperbeam-arm64.sh'"
+    
     # 检查错误处理
     run_test "错误处理函数存在" "grep -q 'handle_error()' 'scripts/deploy-hyperbeam-arm64.sh'"
     run_test "清理函数存在" "grep -q 'cleanup_on_failure()' 'scripts/deploy-hyperbeam-arm64.sh'"
