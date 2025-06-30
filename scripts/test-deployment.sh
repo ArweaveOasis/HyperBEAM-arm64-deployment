@@ -62,7 +62,7 @@ main() {
     run_test "部署脚本存在检查" "test -f 'scripts/deploy-hyperbeam-arm64.sh'"
     
     # 检查修复脚本是否存在
-    run_test "修复脚本存在检查" "test -f 'fix-apple-silicon.sh'"
+    run_test "修复脚本存在检查" "test -f 'scripts/fix-apple-silicon.sh'"
     
     # 检查脚本权限
     run_test "部署脚本可执行权限" "test -x 'scripts/deploy-hyperbeam-arm64.sh'"
@@ -90,7 +90,7 @@ main() {
         done
         
         # 检查 fix-apple-silicon.sh 是否包含关键修复
-        run_test "Apple Silicon修复内容完整" "grep -q 'sed.*\.bak' 'fix-apple-silicon.sh'"
+        run_test "Apple Silicon修复内容完整" "grep -q 'sed.*\.bak' 'scripts/fix-apple-silicon.sh'"
         
         # 检查磁盘空间
         local available_gb=$(df -g . | tail -1 | awk '{print $4}')
