@@ -310,12 +310,28 @@ EOF
     export CMAKE_GENERATOR=Ninja
     log_info "✓ 构建优化参数已设置"
     
+    # 5. 创建构建时需要的 config.flat 文件
+    log_info "创建 rebar3 构建所需的配置文件..."
+    if [[ ! -f "config.flat" ]]; then
+        cat > config.flat << 'EOF'
+[
+  {"port", "10000"},
+  {"mode", "mainnet"},
+  {"priv_key_location", "hyperbeam-key.json"}
+].
+EOF
+        log_info "✓ 已创建 config.flat 构建配置文件"
+    else
+        log_info "✓ config.flat 文件已存在"
+    fi
+    
     log_success "Apple Silicon 兼容性修复完成"
     log_info "修复内容："
     log_info "  ✓ WAMR sed 命令替换为 awk 脚本"
     log_info "  ✓ 构建命令修复为 ninja"
     log_info "  ✓ CMake 策略版本设置"
     log_info "  ✓ Apple Silicon 环境变量优化"
+    log_info "  ✓ rebar3 构建配置文件创建"
 }
 
 # 构建 HyperBEAM
@@ -332,6 +348,10 @@ build_hyperbeam() {
     
     if ! grep -q "ninja -C.*WAMR_DIR" Makefile; then
         log_warning "Makefile 可能未正确修复，构建可能失败"
+    fi
+    
+    if [[ ! -f "config.flat" ]]; then
+        log_warning "未找到 config.flat 文件，rebar3 构建可能失败"
     fi
     
     # 重新加载环境变量

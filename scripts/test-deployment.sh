@@ -79,6 +79,7 @@ main() {
     # 检查新的修复功能
     run_test "WAMR修复脚本创建" "grep -q 'temp_sed_fix.sh' 'scripts/deploy-hyperbeam-arm64.sh'"
     run_test "Ninja构建修复" "grep -q 'ninja -C.*WAMR_DIR' 'scripts/deploy-hyperbeam-arm64.sh'"
+    run_test "构建配置文件创建" "grep -q 'config\.flat' 'scripts/deploy-hyperbeam-arm64.sh'"
     run_test "构建验证功能" "grep -q '验证构建产物' 'scripts/deploy-hyperbeam-arm64.sh'"
     
     # 检查错误处理
