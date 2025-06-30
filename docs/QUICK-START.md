@@ -21,21 +21,29 @@ chmod +x scripts/deploy-hyperbeam-arm64.sh
 ```
 
 这个脚本会自动：
-- ✅ 检查系统兼容性
+- ✅ 检查系统兼容性和环境
+- ✅ 预检系统资源和依赖
+- ✅ 处理端口冲突和进程管理
 - ✅ 安装所有必需依赖
 - ✅ 修复 Apple Silicon 构建问题
-- ✅ 构建 HyperBEAM
-- ✅ 配置主网节点
-- ✅ 启动节点和监控
+- ✅ 构建 HyperBEAM 并生成配置
+- ✅ 配置主网节点和密钥
+- ✅ 启动节点和监控工具
+- ✅ 提供详细的使用指南
 
 ### 步骤 3: 验证部署
 
 ```bash
 # 检查节点状态
+cd ~/hyperbeam-production
 ./monitoring/monitor-node.sh --status
 
-# 查看 Web 界面
-open http://localhost:8734  # 默认端口可能不同
+# 查看 Web 界面 (端口可能不同)
+open http://localhost:10000
+
+# 验证进程和端口
+pgrep -f 'beam.*hb'
+lsof -i :10000
 ```
 
 ## 🔧 手动部署（高级用户）
