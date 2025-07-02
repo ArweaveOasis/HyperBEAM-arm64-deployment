@@ -64,6 +64,9 @@ main() {
     # 检查修复脚本是否存在
     run_test "修复脚本存在检查" "test -f 'scripts/fix-apple-silicon.sh'"
     
+    # 检查诊断脚本是否存在
+    run_test "诊断脚本存在检查" "test -f 'scripts/diagnose-deployment.sh'"
+    
     # 检查脚本权限
     run_test "部署脚本可执行权限" "test -x 'scripts/deploy-hyperbeam-arm64.sh'"
     
@@ -113,7 +116,7 @@ main() {
     run_test "故障排除文档存在" "test -f 'docs/TROUBLESHOOTING.md'"
     
     # 检查监控脚本
-    run_test "监控脚本存在" "test -f 'monitoring/monitor-node.sh'"
+    
     
     # 显示测试结果
     echo "=================================="

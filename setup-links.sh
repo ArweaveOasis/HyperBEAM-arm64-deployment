@@ -17,7 +17,7 @@ echo -e "${BLUE}🔗 设置 HyperBEAM ARM64 核心快捷方式${NC}"
 echo "======================================="
 
 # 检查是否在正确的目录
-if [[ ! -d "scripts" ]] || [[ ! -d "monitoring" ]]; then
+if [[ ! -d "scripts" ]]; then
     echo -e "${YELLOW}⚠️  请在 hyperbeam-arm64-deployment 根目录下运行此脚本${NC}"
     exit 1
 fi
@@ -33,24 +33,22 @@ else
     echo -e "${YELLOW}⚠️  未找到部署脚本${NC}"
 fi
 
-# 2. 监控脚本快捷方式
-if [[ -f "monitoring/monitor-node.sh" ]]; then
-    ln -sf monitoring/monitor-node.sh monitor-node.sh
-    echo -e "${GREEN}✅ ./monitor-node.sh${NC} → monitoring/monitor-node.sh"
-else
-    echo -e "${YELLOW}⚠️  未找到监控脚本${NC}"
-fi
+
 
 echo ""
 echo -e "${GREEN}🎉 设置完成！${NC}"
 echo ""
 echo "现在您可以使用："
 echo -e "  ${GREEN}./deploy-hyperbeam-arm64.sh${NC}  # 一键部署"
-echo -e "  ${GREEN}./monitor-node.sh --status${NC}    # 监控节点"
 echo ""
 echo "其他工具可直接使用完整路径："
+echo "  ./scripts/diagnose-deployment.sh  # 环境诊断"
 echo "  ./scripts/test-deployment.sh      # 测试部署环境"
 echo "  ./scripts/setup-dependencies.sh   # 安装依赖"
 echo "  ./scripts/validate-config.sh      # 验证配置"
 echo "  ./scripts/fix-apple-silicon.sh    # Apple Silicon 修复"
+echo ""
+echo "部署完成后访问 Web 监控界面："
+echo "  http://localhost:8734/~meta@1.0/info        # 节点信息"
+echo "  http://localhost:8734/~hyperbuddy@1.0/dashboard  # 监控面板"
 echo "" 

@@ -3,7 +3,7 @@
 # =============================================================================
 # HyperBEAM ARM64 一键部署脚本 (改进版)
 # 专为 Apple Silicon Mac 设计
-# 版本: v2.0.0 - 包含手动测试验证的所有修复
+# 版本: v2.1.0 - 优化部署流程，集成 Web 监控界面
 # =============================================================================
 #
 # 🚀 主要改进:
@@ -146,7 +146,7 @@ show_welcome() {
     echo "  ✅ 修复 Apple Silicon 兼容性问题"
     echo "  ✅ 构建 HyperBEAM 节点"
     echo "  ✅ 配置主网节点"
-    echo "  ✅ 启动监控工具"
+    echo "  ✅ 启动 Web 监控界面"
     echo ""
     echo -e "${YELLOW}预计部署时间: 30-60 分钟${NC}"
     echo ""
@@ -551,23 +551,7 @@ start_node() {
     exit 1
 }
 
-# 设置监控工具
-setup_monitoring() {
-    log_info "设置监控工具..."
-    
-    # 确保在正确的工作目录
-    cd "$HYPERBEAM_HOME"
-    
-    # 复制监控脚本
-    cp "${SCRIPT_DIR}/../monitoring/"*.sh .
-    chmod +x *.sh
-    
-    # 复制配置验证脚本
-    cp "${SCRIPT_DIR}/validate-config.sh" .
-    chmod +x validate-config.sh
-    
-    log_success "监控工具已设置"
-}
+
 
 # 显示完成信息
 show_completion() {
@@ -583,10 +567,13 @@ show_completion() {
     echo "  🌐 Web界面: http://localhost:$(grep -o '[0-9]*' $HYPERBEAM_HOME/HyperBEAM/_build/default/rel/hb/config.flat || echo "10000")"
     echo ""
     echo "常用命令："
-    echo "  📊 检查状态: cd $HYPERBEAM_HOME && ./monitor-node.sh --status"
     echo "  📋 查看日志: cd $HYPERBEAM_HOME/HyperBEAM/_build/default/rel/hb && ./bin/hb logs"
     echo "  🔄 重启节点: cd $HYPERBEAM_HOME/HyperBEAM/_build/default/rel/hb && ./bin/hb restart"
     echo "  🛑 停止节点: cd $HYPERBEAM_HOME/HyperBEAM/_build/default/rel/hb && ./bin/hb stop"
+    echo ""
+    echo "Web 监控界面："
+    echo "  📊 节点信息: http://localhost:$(grep -o '[0-9]*' $HYPERBEAM_HOME/HyperBEAM/_build/default/rel/hb/config.flat || echo "10000")/~meta@1.0/info"
+    echo "  📈 监控面板: http://localhost:$(grep -o '[0-9]*' $HYPERBEAM_HOME/HyperBEAM/_build/default/rel/hb/config.flat || echo "10000")/~hyperbuddy@1.0/dashboard"
     echo ""
     echo "验证部署："
     echo "  1. 检查进程: pgrep -f 'beam.*hb'"
@@ -594,20 +581,19 @@ show_completion() {
     echo "  3. 访问 Web 界面确认节点运行状态"
     echo ""
     echo "接下来的步骤："
-    echo "  1. 📊 监控节点性能和日志"
+    echo "  1. 📊 通过 Web 界面监控节点状态"
     echo "  2. 🔧 根据需要调整配置文件"
     echo "  3. 🔄 设置自动启动（可选）"
     echo "  4. 🔐 备份节点密钥文件"
     echo ""
     echo -e "${YELLOW}💡 重要提醒：${NC}"
     echo "  • 定期备份密钥文件: cp hyperbeam-key.json ~/Desktop/hyperbeam-backup.json"
-    echo "  • 监控系统资源使用情况"
+    echo "  • 通过 Web 界面监控系统状态"
     echo "  • 关注 HyperBEAM 更新公告"
     echo ""
     echo -e "${YELLOW}📚 更多信息请参阅：${NC}"
     echo "  • 快速指南: docs/QUICK-START.md"
-    echo "  • 故障排除: docs/TROUBLESHOOTING.md" 
-    echo "  • 监控指南: docs/MONITORING.md"
+    echo "  • 故障排除: docs/TROUBLESHOOTING.md"
     echo ""
     
     # 最终验证
@@ -683,7 +669,6 @@ main() {
     build_hyperbeam
     configure_node
     start_node
-    setup_monitoring
     show_completion
 }
 

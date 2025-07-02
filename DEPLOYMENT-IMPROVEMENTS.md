@@ -1,6 +1,26 @@
 # 🚀 HyperBEAM ARM64 一键部署脚本改进总结
 
-## 📋 改进概述
+## 🆕 v2.1.0 更新 (最新)
+
+### 🎯 核心改进
+- ✅ **精简部署流程**: 移除冗余监控脚本，集成 HyperBEAM 原生 Web 监控界面
+- 🌐 **Web 监控集成**: 使用 `http://localhost:8734/~meta@1.0/info` 和 `~hyperbuddy@1.0/dashboard`
+- 🧹 **代码清理**: 删除 `monitoring/` 目录和相关脚本，减少维护复杂度
+- 📚 **文档优化**: 更新所有文档，强调 Web 界面使用，提升用户体验
+- 🔗 **符号链接优化**: 简化 setup-links.sh，仅保留必需的部署脚本快捷方式
+
+### 📊 v2.1.0 改进详情
+- 移除 `monitoring/monitor-node.sh` 和相关监控脚本
+- 更新 `setup-links.sh` 移除监控脚本符号链接  
+- 更新部署脚本，移除 `setup_monitoring()` 函数
+- 更新完成提示，指向原生 Web 监控界面
+- 删除 `docs/MONITORING.md`，简化文档结构
+- 更新 `README.md` 项目结构和使用说明
+- 优化诊断脚本和测试脚本，移除监控相关检查
+
+---
+
+## 📋 v2.0.0 改进概述
 
 基于手动部署成功的经验，对一键部署脚本进行了全面优化，解决了 Apple Silicon Mac 上的所有已知问题。
 
@@ -95,13 +115,13 @@
 
 ### 3. 验证部署结果
 ```bash
-# 检查节点状态
-cd ~/hyperbeam-production
-./monitoring/monitor-node.sh --status
+# 访问 Web 监控界面
+# 节点信息: http://localhost:8734/~meta@1.0/info
+# 监控面板: http://localhost:8734/~hyperbuddy@1.0/dashboard
 
-# 验证进程和端口
+# 验证进程和端口 (命令行)
 pgrep -f 'beam.*hb'
-lsof -i :10000
+lsof -i :8734
 ```
 
 ## 🔧 手动修复对比
@@ -119,7 +139,6 @@ lsof -i :10000
 
 - [快速开始指南](docs/QUICK-START.md) - 已更新
 - [故障排除指南](docs/TROUBLESHOOTING.md)
-- [监控指南](docs/MONITORING.md)
 
 ## 🔮 后续计划
 
@@ -130,7 +149,7 @@ lsof -i :10000
 
 ---
 
-**版本**: v2.0.0  
+**当前版本**: v2.1.0  
 **测试平台**: Apple Silicon Mac (macOS 14.5+)  
 **验证状态**: ✅ 完全通过  
 **维护状态**: 🔄 积极维护 

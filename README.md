@@ -1,8 +1,8 @@
-# 🚀 HyperBEAM ARM64 一键部署工具 (改进版 v2.0.0)
+# 🚀 HyperBEAM ARM64 一键部署工具 (v2.1.0)
 
 **专为 Apple Silicon Mac 设计的 HyperBEAM 节点部署解决方案**
 
-> 🎯 **重大更新 (v2.0.0)**: 基于实际手动部署验证，集成了所有 Apple Silicon 兼容性修复，大幅提升部署成功率！  
+> 🎯 **最新更新 (v2.1.0)**: 优化部署流程，集成原生 Web 监控界面，移除冗余监控脚本，部署体验更加清晰高效！  
 > 📊 **改进总结**: [查看详细改进内容](DEPLOYMENT-IMPROVEMENTS.md)
 
 ## ✨ 新版本亮点
@@ -33,19 +33,22 @@
 git clone https://github.com/ArweaveOasis/HyperBEAM-arm64-deployment.git
 cd hyperbeam-arm64-deployment
 
-# 2. 运行部署测试 (可选但推荐)
+# 2. 运行环境诊断 (推荐)
+./scripts/diagnose-deployment.sh
+
+# 3. 运行部署测试 (可选)
 ./scripts/test-deployment.sh
 
-# 3. 创建快捷方式 (可选)
+# 4. 创建快捷方式 (可选)
 ./setup-links.sh
 
-# 4. 运行一键部署
+# 5. 运行一键部署
 ./scripts/deploy-hyperbeam-arm64.sh
 # 或使用快捷方式: ./deploy-hyperbeam-arm64.sh
 
-# 5. 验证部署
-./monitoring/monitor-node.sh --status
-# 或使用快捷方式: ./monitor-node.sh --status
+# 6. 验证部署 - 访问 Web 监控界面
+# 节点信息: http://localhost:8734/~meta@1.0/info
+# 监控面板: http://localhost:8734/~hyperbuddy@1.0/dashboard
 ```
 
 ## 📁 项目结构
@@ -58,19 +61,16 @@ hyperbeam-arm64-deployment/
 │   ├── setup-dependencies.sh         #     依赖安装脚本
 │   ├── test-deployment.sh            #     部署测试脚本 (新)
 │   ├── validate-config.sh            #     配置验证工具
-│   └── diagnose-build-environment.sh #     环境诊断工具
-├── monitoring/                       # 📊  节点监控
-│   └── monitor-node.sh               #     节点监控工具
+│   ├── diagnose-deployment.sh        #     全面环境诊断工具 (新)
+│   └── diagnose-build-environment.sh #     构建环境诊断工具
 ├── configs/                          # ⚙️  配置模板
 │   ├── mainnet.flat                  #     主网配置模板
 │   └── testnet.flat                  #     测试网配置模板
 ├── docs/                             # 📚  详细文档
 │   ├── QUICK-START.md                #     快速开始指南
-│   ├── TROUBLESHOOTING.md            #     故障排除指南
-│   └── MONITORING.md                 #     监控指南
+│   └── TROUBLESHOOTING.md            #     故障排除指南
 ├── setup-links.sh                   # 🔗  快捷方式设置
 ├── deploy-hyperbeam-arm64.sh         # ⚡  部署脚本快捷方式
-├── monitor-node.sh                   # 📊  监控脚本快捷方式
 ├── .gitignore                        # 🚫  Git 忽略规则
 ├── DEPLOYMENT-IMPROVEMENTS.md        # 📈  改进说明 (新)
 └── README.md                         # 📖  本文件
@@ -80,8 +80,7 @@ hyperbeam-arm64-deployment/
 
 - [📋 快速开始指南](docs/QUICK-START.md) - 15分钟部署教程
 - [🔧 故障排除指南](docs/TROUBLESHOOTING.md) - 常见问题解决
-- [📊 监控指南](docs/MONITORING.md) - 节点监控和管理
-- [📈 改进说明](DEPLOYMENT-IMPROVEMENTS.md) - v2.0.0 改进详情
+- [📈 改进说明](DEPLOYMENT-IMPROVEMENTS.md) - v2.1.0 改进详情
 
 ## 🛠️ 核心功能
 
@@ -91,11 +90,11 @@ hyperbeam-arm64-deployment/
 - ✅ 自动配置主网/测试网参数
 - ✅ 自动生成密钥和配置文件
 
-### 监控和管理
-- 📊 实时节点状态监控
-- 📈 系统资源监控（CPU、内存、网络）
-- 📋 日志分析和错误检测
-- 🔄 节点重启和恢复工具
+### Web 监控界面
+- 📊 原生 Web 监控面板 (http://localhost:8734/~hyperbuddy@1.0/dashboard)
+- 📈 节点状态信息 (http://localhost:8734/~meta@1.0/info)
+- 📋 实时性能指标
+- 🔄 通过命令行管理节点
 
 ### 配置验证
 - ✅ 配置文件语法检查
@@ -120,26 +119,43 @@ export MAKEFLAGS="-j$(sysctl -n hw.ncpu)"
 export ERL_FLAGS="+sbwt very_short +swt very_low"
 ```
 
-## 🔍 监控示例
+## 🔍 监控和管理
 
+### Web 监控界面 (推荐)
+- **节点信息**: http://localhost:8734/~meta@1.0/info
+- **监控面板**: http://localhost:8734/~hyperbuddy@1.0/dashboard
+- **实时状态**: 通过浏览器访问上述地址查看详细信息
+
+### 命令行管理
 ```bash
-# 检查节点状态 (使用快捷方式)
-./monitor-node.sh --status
+# 查看节点日志
+cd ~/hyperbeam-production/HyperBEAM/_build/default/rel/hb
+./bin/hb logs
 
-# 或者直接使用完整路径
-./monitoring/monitor-node.sh --status
+# 重启节点
+./bin/hb restart
 
-# 实时日志监控
-./monitoring/monitor-node.sh --logs
+# 停止节点
+./bin/hb stop
 
-# 系统资源监控
-./monitoring/monitor-node.sh --resources
+# 检查进程状态
+pgrep -f "beam.*hb"
 
-# 网络连接监控
-./monitoring/monitor-node.sh --network
+# 检查端口占用
+lsof -i :8734
 ```
 
 ## 🚨 常见问题排除
+
+### ⚡ 快速诊断
+
+```bash
+# 运行全面环境诊断 (推荐首选)
+./scripts/diagnose-deployment.sh
+
+# 运行部署测试
+./scripts/test-deployment.sh
+```
 
 ### 问题 1: 脚本找不到
 
@@ -198,6 +214,19 @@ cd hyperbeam-arm64-deployment
 | MacBook Pro M2 | ✅ | macOS 14.6 |
 | MacBook Pro M3 | ✅ | macOS 15.0 |
 | MacBook Pro M4 | ✅ | macOS 15.5 |
+
+## 🛠️ 便捷工具列表
+
+| 工具 | 用途 | 命令 |
+|------|------|------|
+| 🔍 环境诊断 | 全面检查部署环境 | `./scripts/diagnose-deployment.sh` |
+| 🧪 部署测试 | 验证部署脚本完整性 | `./scripts/test-deployment.sh` |
+| 🚀 一键部署 | 自动部署 HyperBEAM | `./scripts/deploy-hyperbeam-arm64.sh` |
+| 🔧 依赖安装 | 安装系统依赖 | `./scripts/setup-dependencies.sh` |
+| 🍎 Apple Silicon修复 | 修复兼容性问题 | `./scripts/fix-apple-silicon.sh` |
+| ✅ 配置验证 | 验证节点配置 | `./scripts/validate-config.sh` |
+| 📊 节点监控 | 监控节点状态 | `./monitoring/monitor-node.sh --status` |
+| 🔗 符号链接 | 创建快捷方式 | `./setup-links.sh` |
 
 ## 🔗 相关链接
 
