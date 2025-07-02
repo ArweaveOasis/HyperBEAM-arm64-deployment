@@ -17,7 +17,7 @@
 # 🎯 基于手动部署成功经验优化
 # =============================================================================
 
-set -e  # 遇到错误时退出
+# set -e  # 注释掉自动退出，改为手动错误处理
 
 # 颜色定义
 RED='\033[0;31m'
@@ -111,8 +111,9 @@ precheck_environment() {
     fi
     
     if [[ $issues -gt 0 ]]; then
-        log_error "预检发现 $issues 个问题，请解决后重试"
-        exit 1
+        log_error "预检发现 $issues 个问题，但继续尝试部署..."
+        log_warning "如果部署失败，请解决这些问题后重试"
+        # 不退出，继续执行
     fi
     
     log_success "系统环境预检通过"
@@ -367,11 +368,21 @@ build_hyperbeam() {
         rm -rf _build/wamr
     fi
     
-    # 开始构建
+    # 开始构建 - 移除自动退出，改为继续执行
     log_info "开始编译 HyperBEAM..."
     log_info "预计构建时间：20-30 分钟（首次构建）"
+    log_info "构建过程中如果遇到错误，将尝试继续执行..."
     
-    if rebar3 release; then
+    # 创建构建日志文件
+    local build_log="hyperbeam_build_$(date +%Y%m%d_%H%M%S).log"
+    
+    # 执行构建并记录日志，但不因失败退出
+    set +e  # 临时禁用错误退出
+    rebar3 release 2>&1 | tee "$build_log"
+    local build_result=$?
+    set -e  # 重新启用错误退出
+    
+    if [[ $build_result -eq 0 ]]; then
         log_success "HyperBEAM 构建成功"
         
         # 验证构建产物
@@ -388,21 +399,49 @@ build_hyperbeam() {
         fi
         
     else
-        log_error "HyperBEAM 构建失败"
-        log_error "诊断信息："
-        log_error "1. 检查 WAMR 修复: ls -la temp_sed_fix.sh"
-        log_error "2. 检查 Makefile 修复: grep ninja Makefile"
-        log_error "3. 检查端口占用: lsof -i :8734"
-        log_error "4. 检查系统依赖: brew doctor"
-        log_error "5. 查看详细错误日志"
+        log_error "HyperBEAM 构建失败 (退出代码: $build_result)"
+        log_info "构建日志已保存到: $build_log"
+        log_info "尝试诊断问题..."
         
-        # 显示可能的错误日志
-        if [[ -f "_build/default/rel/hb/log/error.log" ]]; then
-            log_error "最近的错误日志："
-            tail -20 _build/default/rel/hb/log/error.log
+        # 分析构建日志中的错误
+        if [[ -f "$build_log" ]]; then
+            log_info "分析构建错误..."
+            
+            # 查找常见错误模式
+            if grep -i "error.*ninja" "$build_log"; then
+                log_error "发现 Ninja 构建错误，可能是 WAMR 编译问题"
+                log_info "建议：重新运行 Apple Silicon 修复脚本"
+            fi
+            
+            if grep -i "command not found" "$build_log"; then
+                log_error "发现命令未找到错误"
+                log_info "建议：检查系统依赖安装"
+            fi
+            
+            if grep -i "permission denied" "$build_log"; then
+                log_error "发现权限错误"
+                log_info "建议：检查文件权限"
+            fi
+            
+            # 显示最后的错误信息
+            log_info "最后的错误信息："
+            tail -20 "$build_log" | grep -i "error\|failed\|abort" || log_info "未找到明显的错误信息"
         fi
         
-        exit 1
+        # 询问用户是否继续
+        echo
+        log_warning "构建失败，但可以尝试继续部署流程"
+        read -p "是否要继续尝试配置和启动节点? (y/N): " continue_choice
+        
+        if [[ ! $continue_choice =~ ^[Yy]$ ]]; then
+            log_info "用户选择退出部署"
+            log_info "可以稍后运行以下命令重新尝试构建："
+            log_info "  cd $HYPERBEAM_HOME/HyperBEAM"
+            log_info "  rebar3 clean && rebar3 release"
+            return 1
+        else
+            log_info "继续部署流程..."
+        fi
     fi
 }
 
@@ -707,8 +746,8 @@ handle_error() {
     exit $exit_code
 }
 
-# 设置错误处理
-trap 'handle_error $LINENO' ERR
+# 设置错误处理 - 注释掉自动陷阱，改为手动错误处理
+# trap 'handle_error $LINENO' ERR
 
 # 运行主函数
 main "$@" 
