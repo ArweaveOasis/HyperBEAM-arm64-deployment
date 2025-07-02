@@ -624,8 +624,53 @@ show_completion() {
 
 # 主函数
 main() {
-    # 获取脚本目录
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # 获取脚本目录 - 改进版，处理符号链接
+    # 方法1: 尝试使用 readlink 解析符号链接
+    if command -v readlink >/dev/null 2>&1; then
+        local script_path="${BASH_SOURCE[0]}"
+        # 如果是符号链接，解析到实际路径
+        if [[ -L "$script_path" ]]; then
+            script_path="$(readlink "$script_path")"
+            # 如果是相对路径，需要相对于符号链接的目录
+            if [[ ! "$script_path" =~ ^/ ]]; then
+                script_path="$(dirname "${BASH_SOURCE[0]}")/$script_path"
+            fi
+        fi
+        SCRIPT_DIR="$(cd "$(dirname "$script_path")" && pwd)"
+    else
+        # 方法2: 传统方法
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    fi
+    
+    # 验证 SCRIPT_DIR 是否正确设置
+    if [[ -z "$SCRIPT_DIR" ]]; then
+        echo -e "${RED}[ERROR]${NC} 无法获取脚本目录"
+        exit 1
+    fi
+    
+    # 验证关键文件是否存在
+    if [[ ! -f "${SCRIPT_DIR}/setup-dependencies.sh" ]]; then
+        echo -e "${RED}[ERROR]${NC} 脚本目录设置错误"
+        echo "期望目录: ${SCRIPT_DIR}"
+        echo "缺少文件: setup-dependencies.sh"
+        echo ""
+        echo "🔍 调试信息:"
+        echo "  BASH_SOURCE[0]: ${BASH_SOURCE[0]}"
+        echo "  脚本目录: ${SCRIPT_DIR}"
+        echo "  当前目录: $(pwd)"
+        echo "  是否为符号链接: $(if [[ -L "${BASH_SOURCE[0]}" ]]; then echo "是"; else echo "否"; fi)"
+        if [[ -L "${BASH_SOURCE[0]}" ]]; then
+            echo "  符号链接目标: $(readlink "${BASH_SOURCE[0]}" 2>/dev/null || echo "无法解析")"
+        fi
+        echo ""
+        echo "💡 解决方案:"
+        echo "  1. 确保在 hyperbeam-arm64-deployment 目录下运行脚本"
+        echo "  2. 直接运行: ./scripts/deploy-hyperbeam-arm64.sh"
+        echo "  3. 或者运行: ./setup-links.sh 重新设置符号链接"
+        exit 1
+    fi
+    
+    log_info "脚本目录已确认: ${SCRIPT_DIR}"
     
     # 执行部署步骤
     check_apple_silicon
