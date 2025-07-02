@@ -197,6 +197,7 @@ cd hyperbeam-arm64-deployment
 | MacBook Air M1 | ✅ | macOS 14.5 |
 | MacBook Pro M2 | ✅ | macOS 14.6 |
 | MacBook Pro M3 | ✅ | macOS 15.0 |
+| MacBook Pro M4 | ✅ | macOS 15.5 |
 
 ## 🔗 相关链接
 
